@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Predicción de Calidad de Vino</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #f3f4f6;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .card {
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      width: 100%;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 1.5rem;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    input {
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      width: 100%;
+      font-size: 1rem;
+    }
+
+    button {
+      grid-column: span 2;
+      background-color: #4f46e5;
+      color: white;
+      padding: 0.9rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #4338ca;
+    }
+
+    .resultado {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #111827;
+    }
+
+    .icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    @media (max-width: 500px) {
+      form {
+        grid-template-columns: 1fr;
+      }
+
+      button {
+        grid-column: span 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Calidad del Vino 🍷</h1>
+    <form id="vinoForm">
+      <input type="number" step="any" name="fixed_acidity" placeholder="Fixed Acidity" required>
+      <input type="number" step="any" name="volatile_acidity" placeholder="Volatile Acidity" required>
+      <input type="number" step="any" name="citric_acid" placeholder="Citric Acid" required>
+      <input type="number" step="any" name="residual_sugar" placeholder="Residual Sugar" required>
+      <input type="number" step="any" name="chlorides" placeholder="Chlorides" required>
+      <input type="number" step="any" name="free_sulfur_dioxide" placeholder="Free Sulfur Dioxide" required>
+      <input type="number" step="any" name="total_sulfur_dioxide" placeholder="Total Sulfur Dioxide" required>
+      <input type="number" step="any" name="density" placeholder="Density" required>
+      <input type="number" step="any" name="pH" placeholder="pH" required>
+      <input type="number" step="any" name="sulphates" placeholder="Sulphates" required>
+      <input type="number" step="any" name="alcohol" placeholder="Alcohol" required>
+      <button type="submit">Predecir Calidad</button>
+    </form>
+
+    <div class="resultado" id="resultado"></div>
+  </div>
+
+  <script>
+    document.getElementById('vinoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
+
+      for (let key in data) {
+        data[key] = parseFloat(data[key]);
+      }
+
+      const resultadoDiv = document.getElementById('resultado');
+      resultadoDiv.innerHTML = "⏳ Analizando vino...";
+
+      try {
+        const response = await fetch('http://localhost:8000/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        const icon = result.predicción === 1 ? "✅" : "❌";
+        resultadoDiv.innerHTML = `<div class="icon">${icon}</div>${result.mensaje}`;
+      } catch (error) {
+        resultadoDiv.innerHTML = "⚠️ Error al contactar la API";
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+</html>
